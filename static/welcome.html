@@ -1,0 +1,68 @@
+<body>
+    <!-- 登录成功页 -->
+    <div class="row mx-auto" id="welcome">
+        <div class="col-10 col-sm-8 mx-auto px-auto">
+            <!-- 第一行，欢迎行 -->
+            <div class="row mt-5 mb-3 d-flex flex-wrap justify-content-between">
+                <h2>
+                    <div id="welcome_word">
+                        <div><br></div>
+                    </div>
+                </h2>
+                <div>
+                    <button type="button" class="btn btn-outline-grey btn-sm px-3 float-right" style="box-shadow: none;" id="logout_button">退出登录</button>
+                </div>
+            </div>
+
+            <!-- 第二行，选择楼层 -->
+            <!-- 楼层选择需要为每一个用户存储楼层，较为繁琐，暂不实现 -->
+            <!-- <div class="row pt-3 pb-1">楼层选择</div>
+            <div class="row d-flex flex-row justify-content-around mb-4">
+                <div class="icheck-material-cyan">
+                    <input type="checkbox" id="2_floor" checked=true/>
+                    <label for="2_floor" class="noselect long_label">2楼</label>
+                </div>
+                <div class="icheck-material-cyan">
+                    <input type="checkbox" id="3_floor" checked=true/>
+                    <label for="3_floor" class="noselect long_label">3楼</label>
+                </div>
+                <div class="icheck-material-cyan">
+                    <input type="checkbox" id="4_floor" checked=true/>
+                    <label for="4_floor" class="noselect long_label">4楼</label>
+                </div>
+                <div class="icheck-material-cyan">
+                    <input type="checkbox" id="5_floor" />
+                    <label for="5_floor" class="noselect long_label">5楼</label>
+                </div>
+            </div> -->
+            <!-- 第二行，按钮 -->
+            <div class="row px-auto">
+                <button type="button" class="btn btn-default btn-block my-4 mx-auto mb-5 py-0 main_button" id="get_seat_button" data-toggle="modal" data-target="#process_modal">抢
+                    座</button>
+            </div>
+        </div>
+    </div>
+    <!-- 模态框 -->
+    <div class="modal fade" id="process_modal" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content text-center">
+
+                <!-- 模态框头部 -->
+                <div class="modal-header flex-center">
+                    <h4 class="modal-title"><b>抢座中</b></h4>
+                </div>
+
+                <!-- 模态框主体 -->
+                <div class="modal-body flex-center">
+                    <img width="100px" src="pic/tail-spin.svg" />
+                </div>
+
+                <!-- 模态框底部 -->
+                <div class="modal-footer flex-center">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="cancel_get_seat">取消</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</body>
