@@ -1,15 +1,15 @@
-from flask import Flask, request
+from flask import Flask, request, make_response
 import requests
 import json
 import threading
 import config
 import users
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 
 app = Flask(__name__)
 
-# TODO 把所有用户名和密码的传送方式改为用cookie获取
+
 @app.route('/login', methods=['POST'])
 def login():
     try:
@@ -36,6 +36,20 @@ def login():
                 'msg': '登陆失败：用户名或密码错误',
             }
         users.tmp_users[data['username']] = user_session
+        if 'remember' in data:
+            response = make_response({
+                'status': 0,
+                'msg': '登录成功',
+                'name': res_json['data']['list']['name']
+            })
+            if data['remember']:
+                out_date = datetime.today() + timedelta(days=10000)
+                response.set_cookie('username', data['username'], expires=out_date)
+                response.set_cookie('password', data['password'], expires=out_date)
+            else:
+                response.set_cookie('username', data['username'])
+                response.set_cookie('password', data['password'])
+            return response
     except Exception as err:
         print(err)
         return {
@@ -50,10 +64,10 @@ def login():
         }
 
 
-@app.route('/logout', methods=['post'])
+@app.route('/logout', methods=['GET'])
 def logout():
     try:
-        data = request.json
+        data = request.cookies
         if users.tmp_users.pop(data['username'], None):
             return {
                 'status': 0,
@@ -71,10 +85,13 @@ def logout():
         }
 
 
-@app.route('/get_seat', methods=['post'])
+@app.route('/get_seat', methods=['POST'])
 def get_seat():
     try:
-        data = request.json
+        data = request.cookies
+        floor_data = request.json
+        print(data)
+        users.user_floors[data['username']] = floor_data['floors']
         if data['username'] in users.tmp_users:
             users.waiting_users.append(users.tmp_users[data['username']])
             print('用户' + data['username'] + '进入抢座队列')
@@ -89,20 +106,22 @@ def get_seat():
                 'msg': '未登录'
             }
     except Exception as err:
+        print(err)
         return {
             'status': -1,
             'msg': str(err)
         }
 
 
-@app.route('/cancel_get_seat', methods=['post'])
+@app.route('/cancel_get_seat', methods=['GET'])
 def cancel_get_seat():
     try:
-        data = request.json
+        data = request.cookies
         for user_session in users.waiting_users:
             if data['username'] == user_session.cookies.get('userid'):
                 users.tmp_users[data['username']] = user_session
                 users.waiting_users.popleft()
+                del users.user_floors[data['username']]
                 return {
                     'status': 0,
                     'msg': '成功取消'
@@ -110,6 +129,7 @@ def cancel_get_seat():
         if data['username'] in users.running_users:
             users.tmp_users[data['username']] = users.running_users[data['username']]
             del users.running_users[data['username']]
+            del users.user_floors[data['username']]
             return {
                 'status': 0,
                 'msg': '成功取消'
@@ -125,14 +145,14 @@ def cancel_get_seat():
         }
 
 
-@app.route('/get_status', methods=['POST'])
+@app.route('/get_status', methods=['GET'])
 def get_status():
     try:
-        data = request.json
+        data = request.cookies
         if data['username'] in users.tmp_users:
             return {
                 'status': 3,
-                'msg': '未点击抢座'
+                'msg': '已取消抢座'
             }
         for user_session in users.waiting_users:
             if data['username'] == user_session.cookies.get('userid'):
@@ -202,12 +222,19 @@ def traverse_loop():
 # 楼层遍历
 def traverse_floor(user_id):
     while True:
-        for floor in config.floors:
+        try:
             if not user_id:
                 return
             if user_id not in users.running_users:
                 return
-            try:
+            floors = [f for f in range(2, 6) if f in users.user_floors[user_id]]
+            if not floors:
+                if user_id in users.running_users:
+                    users.fail_users[user_id] = '请求预约的楼层数为空'
+                    del users.running_users[user_id]
+                    del users.user_floors[user_id]
+                return
+            for floor in floors:
                 res = requests.get(config.urls['floor'].format(floor))
                 if res.status_code != requests.codes.ok:
                     raise Exception('向图书馆的网络请求失败')
@@ -215,10 +242,16 @@ def traverse_floor(user_id):
                 if res_json['status'] != 1:
                     raise Exception('提交信息有误')
                 user_id = traverse_area(res_json['data']['list']['childArea'], user_id)
-            except Exception as err:
-                print('遍历楼层时出错：')
-                print(str(err))
-                continue
+        except Exception as err:
+            print('遍历楼层时出错：')
+
+
+            print(str(err))
+            if user_id in users.running_users:
+                users.fail_users[user_id] = err
+                del users.running_users[user_id]
+                del users.user_floors[user_id]
+            return
 
 
 # 区域遍历
@@ -259,23 +292,24 @@ def traverse_area(areas, user_id):
             }
             res = requests.get(config.urls['area'], params=params)
             if res.status_code != requests.codes.ok:
-                print('寻位错误：向图书馆的网络请求失败')
-                continue
+                raise Exception('寻位错误：向图书馆的网络请求失败')
             res_json = res.json()
             if res_json['status'] != 1:
-                print('寻位错误：提交信息有误')
-                return None
+                raise Exception('寻位错误：提交信息有误')
             user_id = traverse_seat(res_json['data']['list'], segment, user_id)
         except Exception as err:
             print('遍历区域时出错：')
             print(str(err))
+            if user_id in users.running_users:
+                users.fail_users[user_id] = err
+                del users.running_users[user_id]
+                del users.user_floors[user_id]
             continue
     return user_id
 
 
 # 座位遍历
 def traverse_seat(seats, segment, user_id):
-    user_err_cnt = 0
     for seat in seats:
         if not user_id:
             return None
@@ -300,16 +334,16 @@ def traverse_seat(seats, segment, user_id):
                 # 进入成功用户集合
                 users.success_users[user_id] = [seat['area_name'], seat['name']]
                 del users.running_users[user_id]
+                del users.user_floors[user_id]
                 return None
         except Exception as err:
             print('抢座时出错：')
             print(str(err))
-            user_err_cnt += 1
-            if user_err_cnt >= config.user_fail_chance:
-                # 失败一定次数则进入失败用户集合
+            if user_id in users.running_users:
                 users.fail_users[user_id] = str(err)
                 del users.running_users[user_id]
-                return None
+                del users.user_floors[user_id]
+            return None
     return user_id
 
 
@@ -326,6 +360,7 @@ def clean_loop():
                 users.running_users.clear()
                 users.fail_users.clear()
                 users.success_users.clear()
+                users.user_floors.clear()
                 time.sleep(60 * 60 * 20)
                 continue
             time.sleep(60 * 30)

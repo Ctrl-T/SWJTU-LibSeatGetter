@@ -10,6 +10,8 @@ running_users = {}
 success_users = {}
 # 失败的用户，用dict储存用户名和出错原因
 fail_users = {}
+# 存储用户抢座楼层信息
+user_floors = {}
 
 
 class User:

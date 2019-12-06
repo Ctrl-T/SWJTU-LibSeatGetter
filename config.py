@@ -9,7 +9,3 @@ urls = {
     'area': 'http://202.115.72.52/api.php/spaces_old',
     'book': 'http://202.115.72.52/api.php/spaces/{}/book'
 }
-
-floors = [2, 3, 4]
-
-user_fail_chance = 2
