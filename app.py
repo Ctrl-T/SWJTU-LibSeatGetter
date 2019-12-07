@@ -92,7 +92,6 @@ def get_seat():
     try:
         data = request.cookies
         floor_data = request.json
-        print(data)
         users.user_floors[data['username']] = floor_data['floors']
         if data['username'] in users.tmp_users:
             users.waiting_users.append(users.tmp_users[data['username']])
