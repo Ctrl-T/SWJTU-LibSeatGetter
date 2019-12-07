@@ -200,3 +200,5 @@ $(document).on('click', '#cancel_get_seat', function() {
         }
     })
 })
+
+console.log('恭喜你发现这段文字！\n%cUVEgODUwODIzNDc1%c\n使用过程中发现bug或是有新需求欢迎交流！', 'color:#00a1d6', '')
