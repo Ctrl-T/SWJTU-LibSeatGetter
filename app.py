@@ -198,11 +198,11 @@ def traverse_loop():
         # 轮询用户队列
         while True:
             try:
-                # 每0.5秒查一遍有没有用户
+                # 每1秒查一遍有没有用户
                 if not users.waiting_users:
                     # print('用户列表为空')
                     # print(users.waiting_users)
-                    time.sleep(5)
+                    time.sleep(1)
                     continue
                 # 有用户，获取队头用户
                 user_session = users.waiting_users.popleft()
