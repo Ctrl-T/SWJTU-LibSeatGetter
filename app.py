@@ -49,6 +49,7 @@ def login():
             else:
                 response.set_cookie('username', data['username'])
                 response.set_cookie('password', data['password'])
+            print(data['username'] + ' - ' + res_json['data']['list']['name'] + '登录成功')
             return response
     except Exception as err:
         print(err)
@@ -57,6 +58,7 @@ def login():
             'msg': str(err)
         }
     else:
+        print(data['username'] + ' - ' + res_json['data']['list']['name'] + '登录成功')
         return {
             'status': 0,
             'msg': '登录成功',
@@ -167,6 +169,7 @@ def get_status():
             }
         if data['username'] in users.success_users:
             seat_data = users.success_users.pop(data['username'])
+            print(data['username'] + ' 抢座成功')
             return {
                 'status': 1,
                 'msg': '抢座成功',
@@ -244,8 +247,6 @@ def traverse_floor(user_id):
                 user_id = traverse_area(res_json['data']['list']['childArea'], user_id)
         except Exception as err:
             print('遍历楼层时出错：')
-
-
             print(str(err))
             if user_id in users.running_users:
                 users.fail_users[user_id] = err
@@ -338,7 +339,7 @@ def traverse_seat(seats, segment, user_id):
                 return None
         except Exception as err:
             print('抢座时出错：')
-            print(str(err))
+            print(user_id + ':' + str(err))
             if user_id in users.running_users:
                 users.fail_users[user_id] = str(err)
                 del users.running_users[user_id]
