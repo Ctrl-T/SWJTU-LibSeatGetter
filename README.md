@@ -3,7 +3,7 @@
 
 ---
 ### 网址
-http://lib.steelblue.cn/
+http://lib.steelblue.cn
 
 ### 说明
 - 本软件主要用于解决期末考试期间图书馆爆满，抢不到座位的问题
