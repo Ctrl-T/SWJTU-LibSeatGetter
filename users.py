@@ -12,10 +12,3 @@ success_users = {}
 fail_users = {}
 # 存储用户抢座楼层信息
 user_floors = {}
-
-
-class User:
-    def __init__(self, username, password, session):
-        self.session = session
-        self.password = password
-        self.username = username

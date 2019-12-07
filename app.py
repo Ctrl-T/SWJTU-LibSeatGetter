@@ -1,6 +1,5 @@
 from flask import Flask, request, make_response
 import requests
-import json
 import threading
 import config
 import users
