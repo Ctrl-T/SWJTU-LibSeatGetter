@@ -265,10 +265,12 @@ def traverse_floor(user_id):
                 if res_json['status'] != 1:
                     raise Exception('提交信息有误')
                 user_id = traverse_area(res_json['data']['list']['childArea'], user_id)
+                if not user_id:
+                    return
         except Exception as err:
             print('遍历楼层时出错：')
             print(user_id + ':' + str(err))
-            move_running_to_fail(user_id, err)
+            move_running_to_fail(user_id, str(err))
             return
 
 
@@ -313,10 +315,12 @@ def traverse_area(areas, user_id):
             if res_json['status'] != 1:
                 raise Exception('寻位错误：提交信息有误')
             user_id = traverse_seat(res_json['data']['list'], segment, user_id)
+            if not user_id:
+                return None
         except Exception as err:
             print('遍历区域时出错：')
             print(user_id + ':' + str(err))
-            move_running_to_fail(user_id, err)
+            move_running_to_fail(user_id, str(err))
             return None
     return user_id
 
@@ -354,7 +358,7 @@ def traverse_seat(seats, segment, user_id):
         except Exception as err:
             print('抢座时出错：')
             print(user_id + ':' + str(err))
-            move_running_to_fail(user_id, err)
+            move_running_to_fail(user_id, str(err))
             return None
     return user_id
 
