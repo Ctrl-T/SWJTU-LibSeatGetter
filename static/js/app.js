@@ -126,6 +126,7 @@ $(document).on('click', '#get_seat_button', function() {
         $('#warning_info').text('未选择楼层')
         return
     }
+    $('#process_modal').modal('show')
     $.ajax({
         url: '/get_seat',
         type: 'POST',
@@ -135,14 +136,7 @@ $(document).on('click', '#get_seat_button', function() {
         contentType: 'application/json;charset=utf-8',
         success: function(data) {
             if (data['status']) {
-                switch (data['status']) {
-                    case 1:
-                        $('#warning_info').text('未登录')
-                        break
-                    default:
-                        $('#warning_info').text('系统错误！')
-                        break;
-                }
+                $('#warning_info').text(data['msg'])
             }
         }
     })

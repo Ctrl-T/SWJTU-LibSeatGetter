@@ -27,12 +27,12 @@ def login():
         if res.status_code != requests.codes.ok:
             return {
                 'status': 2,
-                'msg': '登陆失败：向图书馆的网络请求失败',
+                'msg': '向图书馆的网络请求失败',
             }
         if res_json['status'] != 1:
             return {
                 'status': 1,
-                'msg': '登陆失败：用户名或密码错误',
+                'msg': '用户名或密码错误',
             }
         users.tmp_users[data['username']] = user_session
         if 'remember' in data:
@@ -89,6 +89,17 @@ def logout():
 @app.route('/get_seat', methods=['POST'])
 def get_seat():
     try:
+        hour_now = datetime.now().hour
+        if hour_now >= 21:
+            return {
+                'status': 3,
+                'msg': '当天web预约已结束，不可预约!'
+            }
+        if hour_now < 6:
+            return {
+                'status': 3,
+                'msg': '当天web预约未开始，不可预约!'
+            }
         data = request.cookies
         floor_data = request.json
         users.user_floors[data['username']] = floor_data['floors']
