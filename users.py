@@ -12,3 +12,5 @@ success_users = {}
 fail_users = {}
 # 存储用户抢座楼层信息
 user_floors = {}
+# 储存上次查询时间，用dict储存用户名和时间
+last_check_time = {}
