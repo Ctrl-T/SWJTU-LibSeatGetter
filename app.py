@@ -259,10 +259,10 @@ def traverse_floor(user_id):
             # 不在说明用户已经取消抢座
             if user_id not in users.running_users:
                 return
-            # 前端超过5秒未向后端发送状态请求即将其踢出
+            # 前端超过5分钟未向后端发送状态请求即将其踢出
             time_now = datetime.now()
             if user_id in users.last_check_time:
-                if (time_now - users.last_check_time[user_id]).seconds > 5:
+                if (time_now - users.last_check_time[user_id]).seconds > 5 * 60:
                     raise Exception('前端过长时间未响应')
             floors = [f for f in range(2, 6) if f in users.user_floors[user_id]]
             if not floors:
