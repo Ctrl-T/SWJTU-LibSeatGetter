@@ -14,3 +14,11 @@ fail_users = {}
 user_floors = {}
 # 储存上次查询时间，用dict储存用户名和时间
 last_check_time = {}
+
+# 预约后天的用户
+tmr_waiting_users = {}
+# 正在为明天抢座的用户
+tmr_running_users = {}
+# 存储明天抢座用户抢座楼层信息
+tmr_user_floors = {}
+
